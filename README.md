@@ -16,7 +16,7 @@ her namespace'i cluster'da kontrol eder (salt okuma + dry-run) ve ne yapılacağ
 - **Değerler gizli kalır:** Mail yapay zekâya gönderilmeden önce değer olabilecek her şey `<<S1>>` gibi etiketlerle
   değiştirilir; gerçek değerler bilgisayarınızda geri konur. Giden metni uygulamada görebilirsiniz.
   Mevcut secret değerleri hiç okunmaz; karşılaştırma SHA-256 hash ile yapılır.
-- **Kendi yapay zekânız:** Claude Code (Claude Pro/Max aboneliği, API anahtarı gerekmez), Anthropic API,
+- **Kendi yapay zekânız:** Claude Code (Claude Pro/Max aboneliği, API anahtarı gerekmez), Codex CLI (ChatGPT hesabı), Anthropic API,
   OpenAI uyumlu herhangi bir uç nokta (OpenAI, Ollama, LM Studio, şirket gateway'i) veya yapay zekâsız basit okuyucu.
 - **Kendi ortamınız:** kubectl bu bilgisayarda ya da SSH ile bir sunucuda çalışabilir. Context'ler ve ortam
   açıklaması Ayarlar'dan girilir; kodda kişiye/şirkete özgü hiçbir değer yoktur.
@@ -45,8 +45,21 @@ open "build/Secret Bot.app"
 
 1. **Bağlantı:** "Bu bilgisayarda" veya "SSH ile bir sunucuda" seçin. SSH için anahtarla giriş (`ssh-copy-id`) hazır olmalı.
    **kubeconfig'ten getir** ile context'leri doldurun, **Bağlantıyı test et** ile doğrulayın.
-2. **Yapay zekâ:** "Otomatik" bırakabilirsiniz (Claude Code → Anthropic API → OpenAI uyumlu). Anahtarlar Keychain'de saklanır.
+2. **Yapay zekâ:** "Otomatik" bırakabilirsiniz (Claude Code → Codex CLI → Anthropic API → OpenAI uyumlu). Anahtarlar Keychain'de saklanır.
 3. **Ortam:** Cluster'larınızı ve namespace isimlendirmenizi kısaca anlatın; yapay zekâ bunu kullanır.
+
+## Yapay zekâ bağlama
+
+| Seçenek | Ne gerekir | Ücret |
+|---|---|---|
+| **Claude Code** | `claude` kurulu ve `/login` yapılmış | Claude Pro/Max aboneliğinden düşer |
+| **Codex CLI** | `brew install codex` (veya `npm install -g @openai/codex`), sonra `codex login` | ChatGPT planınızın Codex limitinden düşer (planınızın Codex'i kapsadığını kontrol edin) |
+| **Anthropic API** | API anahtarı (console.anthropic.com) | Kullandıkça |
+| **OpenAI uyumlu** | Adres + model (+ anahtar): OpenAI, şirket gateway'i, Gemini, ya da yerel **Ollama** (`http://localhost:11434/v1`) | Ollama ücretsiz ve tamamen yerel |
+| **Kapalı** | – | Basit kural tabanlı okuyucu |
+
+Hepsinde mail gönderilmeden önce değerler maskelenir. Codex ve Claude Code salt okunur modda, araçları kapalı veya
+sandbox'ta çalıştırılır; oturum diske kaydedilmez.
 
 ## Kullanım
 

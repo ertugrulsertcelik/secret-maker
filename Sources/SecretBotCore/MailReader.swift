@@ -12,15 +12,18 @@ public enum MailReader {
     /// Ayarlara göre kullanılacak somut sağlayıcı (yoksa nil = basit okuyucu).
     public static func resolve(_ cfg: AppConfig) -> AIProvider? {
         let hasCLI = ClaudeCodeExtractor.findCLI() != nil
+        let hasCodex = { CodexExtractor.findCLI() != nil }
         let hasAnthropic = APIKeyStore.read(APIKeyStore.anthropic) != nil
         let hasOpenAI = !cfg.openaiBaseURL.isEmpty && !cfg.openaiModel.isEmpty
         switch cfg.aiProvider {
         case .off: return nil
         case .claudeCode: return hasCLI ? .claudeCode : nil
+        case .codex: return hasCodex() ? .codex : nil
         case .anthropic: return hasAnthropic ? .anthropic : nil
         case .openai: return hasOpenAI ? .openai : nil
         case .auto:
             if hasCLI { return .claudeCode }
+            if hasCodex() { return .codex }
             if hasAnthropic { return .anthropic }
             if hasOpenAI { return .openai }
             return nil
@@ -31,6 +34,7 @@ public enum MailReader {
     public static func statusText(_ cfg: AppConfig) -> String {
         switch resolve(cfg) {
         case .claudeCode: return "Claude Code (abonelik)"
+        case .codex: return "Codex CLI (ChatGPT)\(cfg.codexModel.isEmpty ? "" : " · " + cfg.codexModel)"
         case .anthropic: return "Anthropic API · \(cfg.anthropicModel)"
         case .openai: return "\(cfg.openaiModel) · \(URL(string: cfg.openaiBaseURL)?.host ?? cfg.openaiBaseURL)"
         default: return cfg.aiProvider == .off ? "Yapay zekâ kapalı, basit okuyucu" : "Yapay zekâ bağlı değil, basit okuyucu"
@@ -58,6 +62,9 @@ public enum MailReader {
             case .claudeCode:
                 let r = try await ClaudeCodeExtractor.extract(masked: masked, model: cfg.claudeCodeModel, prompt: prompt)
                 return Outcome(result: r, readBy: "Claude Code · \(ClaudeCodeExtractor.lastModel)", masked: masked, usedAI: true)
+            case .codex:
+                let r = try await CodexExtractor.extract(masked: masked, model: cfg.codexModel, prompt: prompt)
+                return Outcome(result: r, readBy: "Codex CLI\(cfg.codexModel.isEmpty ? "" : " · " + cfg.codexModel)", masked: masked, usedAI: true)
             case .anthropic:
                 let key = APIKeyStore.read(APIKeyStore.anthropic) ?? ""
                 let r = try await AIExtractor.extract(masked: masked, apiKey: key, model: cfg.anthropicModel, prompt: prompt)

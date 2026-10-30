@@ -3,6 +3,7 @@ import Foundation
 public enum AIProvider: String, CaseIterable, Identifiable {
     case auto
     case claudeCode = "claude-code"
+    case codex
     case anthropic
     case openai
     case off
@@ -11,7 +12,8 @@ public enum AIProvider: String, CaseIterable, Identifiable {
     public var title: String {
         switch self {
         case .auto: return "Otomatik"
-        case .claudeCode: return "Claude Code (abonelik)"
+        case .claudeCode: return "Claude Code (Claude aboneliği)"
+        case .codex: return "Codex CLI (ChatGPT hesabı)"
         case .anthropic: return "Anthropic API"
         case .openai: return "OpenAI uyumlu uç nokta"
         case .off: return "Kapalı (basit okuyucu)"
@@ -34,6 +36,7 @@ public struct AppConfig {
         public static let aiProvider = "aiProvider"
         public static let anthropicModel = "anthropicModel"
         public static let claudeCodeModel = "claudeCodeModel"
+        public static let codexModel = "codexModel"
         public static let openaiBaseURL = "openaiBaseURL"
         public static let openaiModel = "openaiModel"
     }
@@ -53,6 +56,7 @@ public struct AppConfig {
     public var aiProvider: AIProvider
     public var anthropicModel: String
     public var claudeCodeModel: String
+    public var codexModel: String
     public var openaiBaseURL: String
     public var openaiModel: String
 
@@ -76,6 +80,7 @@ public struct AppConfig {
             aiProvider: AIProvider(rawValue: s(Key.aiProvider)) ?? .auto,
             anthropicModel: s(Key.anthropicModel).isEmpty ? defaultModel : s(Key.anthropicModel),
             claudeCodeModel: s(Key.claudeCodeModel).isEmpty ? defaultModel : s(Key.claudeCodeModel),
+            codexModel: s(Key.codexModel),
             openaiBaseURL: s(Key.openaiBaseURL),
             openaiModel: s(Key.openaiModel)
         )

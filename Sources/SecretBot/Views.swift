@@ -773,6 +773,8 @@ struct AISettings: View {
     @EnvironmentObject var state: AppState
     @AppStorage(AppConfig.Key.aiProvider) private var provider = AIProvider.auto.rawValue
     @AppStorage(AppConfig.Key.claudeCodeModel) private var claudeCodeModel = AppConfig.defaultModel
+    @AppStorage(AppConfig.Key.codexModel) private var codexModel = ""
+    @State private var codexPath: String? = nil
     @AppStorage(AppConfig.Key.anthropicModel) private var anthropicModel = AppConfig.defaultModel
     @AppStorage(AppConfig.Key.openaiBaseURL) private var openaiBaseURL = ""
     @AppStorage(AppConfig.Key.openaiModel) private var openaiModel = ""
@@ -789,7 +791,7 @@ struct AISettings: View {
                 LabeledContent("Şu an kullanılan") {
                     Text(state.aiStatus).foregroundStyle(state.aiAvailable ? .green : .orange)
                 }
-                Text("Otomatik: sırayla Claude Code → Anthropic API → OpenAI uyumlu uç nokta. Hiçbiri yoksa basit okuyucu kullanılır. Her durumda maildeki değerler gönderilmeden önce <<S1>> gibi etiketlerle gizlenir.")
+                Text("Otomatik: sırayla Claude Code → Codex CLI → Anthropic API → OpenAI uyumlu uç nokta. Hiçbiri yoksa basit okuyucu kullanılır. Her durumda maildeki değerler gönderilmeden önce <<S1>> gibi etiketlerle gizlenir.")
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -801,6 +803,16 @@ struct AISettings: View {
                 TextField("Model", text: $claudeCodeModel)
                 Text("API anahtarı gerekmez. Oturum kapalıysa terminalde `claude` yazıp /login ile giriş yapın.")
                     .font(.caption).foregroundStyle(.secondary)
+            }
+            Section("Codex CLI (ChatGPT hesabı)") {
+                LabeledContent("Durum") {
+                    Text(codexPath != nil ? "Kurulu" : "Bulunamadı")
+                        .foregroundStyle(codexPath != nil ? .green : .secondary)
+                }
+                TextField("Model (boş = Codex varsayılanı)", text: $codexModel)
+                Text("Kurulum: `brew install codex` veya `npm install -g @openai/codex`. Ardından terminalde `codex login` ile ChatGPT hesabınızla giriş yapın (kontrol: `codex login status`). Kullanım ChatGPT planınızın Codex limitinden düşer; planınızın Codex'i kapsadığını kontrol edin.")
+                    .font(.caption).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Section("Anthropic API") {
                 LabeledContent("Anahtar") {
@@ -824,6 +836,7 @@ struct AISettings: View {
             }
         }
         .formStyle(.grouped)
+        .task { codexPath = await Task.detached { CodexExtractor.findCLI() }.value }
     }
 
     private func keyButtons(account: String, value: Binding<String>) -> some View {
