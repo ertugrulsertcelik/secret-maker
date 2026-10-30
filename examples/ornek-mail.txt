@@ -1,0 +1,22 @@
+Merhaba,
+
+team-dev-payments
+team-test-payments
+
+namespace'lerine aşağıdaki şekilde secret ekler misiniz?
+
+- name: PAYMENT_APP_TOKEN
+  valueFrom:
+    secretKeyRef:
+      name: payments-provider-secret
+      key: app-token
+- name: PAYMENT_API_KEY
+  valueFrom:
+    secretKeyRef:
+      name: payments-provider-secret
+      key: api-key
+
+"appToken": "ORNEK0000TOKEN1111SAHTE2222DEGER",
+"apiKey": "ornek-sahte-api-key-0123456789abcdef"
+
+Teşekkürler
