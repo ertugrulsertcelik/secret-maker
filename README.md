@@ -26,20 +26,42 @@ her namespace'i cluster'da kontrol eder (salt okuma + dry-run) ve ne yapılacağ
 
 ## Gereksinimler
 
-- macOS 14 veya üstü
-- Xcode Command Line Tools (`xcode-select --install`), Swift 5.9+
+- macOS 14 veya üstü (Intel veya Apple Silicon)
 - kubectl ve python3: bu bilgisayarda **veya** SSH ile erişilen sunucuda
-- (İsteğe bağlı) Yapay zekâ: [Claude Code](https://claude.com/product/claude-code) kurulu ve giriş yapılmış,
-  ya da bir Anthropic / OpenAI uyumlu API
+- (İsteğe bağlı) Yapay zekâ: Claude Code, Codex CLI, bir Anthropic / OpenAI uyumlu API ya da yerel Ollama
+- Sadece kaynaktan derlemek için: Xcode Command Line Tools (`xcode-select --install`)
 
 ## Kurulum
+
+### Hazır uygulamayı indir (önerilen, derleme gerekmez)
+
+1. Repo sayfasında **Releases** → en son sürüm → **SecretBot-…zip** dosyasını indirip açın.
+2. **Secret Bot.app**'i **Uygulamalar** klasörüne sürükleyin.
+3. İlk açılışta macOS uyarı verir (uygulama Apple geliştirici sertifikasıyla imzalı değil):
+   **Sistem Ayarları → Gizlilik ve Güvenlik → Yine de Aç**. "Hasarlı" uyarısı çıkarsa Terminal'de bir kez:
+   ```bash
+   xattr -dr com.apple.quarantine "/Applications/Secret Bot.app"
+   ```
+
+### Kaynaktan derle
 
 ```bash
 git clone https://github.com/<kullanıcı>/secret-maker.git
 cd secret-maker
-./build.sh
-open "build/Secret Bot.app"
+make install        # derler, /Applications'a kurar ve açar
 ```
+
+Güncellemek için: `git pull && make install`. Diğer kısayollar için `make help`.
+
+### Yeni sürüm yayınlama (bakımcılar için)
+
+```bash
+git tag v1.1.0 && git push origin v1.1.0
+```
+
+GitHub Actions Intel + Apple Silicon paketi derleyip **Releases**'a ekler (`.github/workflows/release.yml`).
+
+### İlk ayarlar
 
 İlk açılışta **Ayarlar (⌘,)**:
 
@@ -73,7 +95,7 @@ sandbox'ta çalıştırılır; oturum diske kaydedilmez.
 Ayarları uygulamayla aynı yerden okur; hiçbir zaman gerçek değişiklik yapmaz.
 
 ```bash
-swift build --product secretbot-cli
+make cli
 .build/debug/secretbot-cli --mask examples/ornek-mail.txt    # yapay zekâya gidecek maskeli metin
 .build/debug/secretbot-cli --read examples/ornek-mail.txt    # yapay zekâ ile okuma (değerler gizli yazılır)
 .build/debug/secretbot-cli examples/ornek-mail.txt dev       # okuma + cluster kontrolü + dry-run
@@ -86,5 +108,7 @@ swift build --product secretbot-cli
 Sources/SecretBotCore/   mail okuma, maskeleme, yapay zekâ sağlayıcıları, kubectl işlemleri
 Sources/SecretBot/       SwiftUI arayüzü
 Sources/secretbot-cli/   test aracı
-icon/make_icon.swift     simgeyi üreten script (swift icon/make_icon.swift icon/AppIcon-1024.png)
+icon/                    simgeyi üreten scriptler (make icon)
+build.sh                 derleme / paketleme / kurulum (./build.sh --help)
+.github/workflows/       sürüm etiketiyle otomatik derleme ve Releases
 ```
